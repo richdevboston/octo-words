@@ -6,36 +6,28 @@ import tornado.wsgi
 #import uuid
 import hashlib
 import rsa
-
 import MySQLdb 
 
-from google.appengine.ext import db
-from Crypto.Cipher import AES
 from utils import wget
 
 CLOUDSQL_PROJECT = 'octo-words'
 CLOUDSQL_INSTANCE = 'octo-words'
 SALT = 'ba4ae64a7f60c7b13214a86ef2c59438'
-#ENCRYPT_KEY = '1c99a1de324e9a825f7e269f0c2a2f99'
-#IV = '\x04\x80_\xb5\x10H\r"\n}\xf1-\xd3\x85\x0c\x11'
-
-#SECRET = "\xb7\x80\x17\x8b\xfd\xd6\xfb\x84\xeb\x981P'6Bh"
-
-#ENCRYPT_KEY = '0123456789abcdef'
-#IV = 16 * '\x00'  
 
 PUBLIC_KEY = u'-----BEGIN RSA PUBLIC KEY-----\nMEgCQQCAK6xyJOjr9642FKmW0BSWqfnvwgvEADzcBjd5U5fQl8BoEvs0mTsLl4ue\nn9vCo/VrYprfyhMoNTMtOu3Z7YyHAgMBAAE=\n-----END RSA PUBLIC KEY-----\n'
 PRIVATE_KEY = u'-----BEGIN RSA PRIVATE KEY-----\nMIIBOwIBAAJBAIArrHIk6Ov3rjYUqZbQFJap+e/CC8QAPNwGN3lTl9CXwGgS+zSZ\nOwuXi56f28Kj9Wtimt/KEyg1My067dntjIcCAwEAAQJAQ1OtwD/3QozWrH3qH9iq\nGAKt0e4CtDDTx1hUp5zrTWd4JgPiPzRzgjB0I+UWNdYpYtRcoTE1U6EDzO+MLzy6\nUQIjALzdutw7xSrakPpLKwCDniIYlb2VoXjWn5YU6sKKZ28QxqsCHwCtutOLVYcS\n5JBMrftaX+yjh1VjRhWkEnmB5DopwZUCIhhBnfslDgiX86DBwK8bOFcGs0ybCBb9\n8ZcT7qa3odso22sCHl47pFtDfQzGZW7yQBB5T4Yz9iDu9vYT/0xxWwsjMQIiAct8\njwdvdMtcP2CT0vOJCPo6YAcBx5BrYd8NNIrRYB1LwQ==\n-----END RSA PRIVATE KEY-----\n'
 
-class Entry(db.Model):
-    """A single word entry."""
-    word_hash = db.StringProperty(required=True)
-    word_encrypt = db.StringProperty(required=True)
-    word_freq = db.IntegerProperty(required=True)
+ADMIN_HASH = 'ee79361cc113767b66920d1b2f68a1f90452b01398ff26d4b6f4f0f682e6952dfc1fd29b3070109bb8c796824409ee6c8a42f9f1deb8a533a03703de8940a475'
 
 class SQLHandler(tornado.web.RequestHandler):
     """Displays a table of available records."""
     def get(self):
+        # Test for login cookie
+        if not self.get_secure_cookie("cookie"):
+            self.redirect('/login')
+            return
+
+        # Extract data from DB
         db = MySQLdb.connect(
                 unix_socket='/cloudsql/{}:{}'.format(CLOUDSQL_PROJECT, CLOUDSQL_INSTANCE),
                 user='root',
@@ -55,6 +47,21 @@ class SQLHandler(tornado.web.RequestHandler):
 
         self.render("sql.html", results=result)
 
+class LoginHandler(tornado.web.RequestHandler):
+    """Displays a login interface."""
+    def get(self):
+        self.render("login.html", )
+
+    def post(self):
+        user = hashlib.sha512(self.get_argument("user", default=None, strip=False) + SALT).hexdigest()
+        passwd = hashlib.sha512(self.get_argument("passwd", default=None, strip=False) + SALT).hexdigest()
+        if user == ADMIN_HASH and passwd == ADMIN_HASH:
+            print('login correct')
+            self.set_secure_cookie("cookie", hashlib.sha512(user + SALT).hexdigest())
+            self.redirect('/admin')
+        else:
+            self.redirect('/login')
+
 class HomeHandler(tornado.web.RequestHandler):
     """Displays the home page."""
     def get(self):
@@ -67,8 +74,14 @@ class HomeHandler(tornado.web.RequestHandler):
         response = 'Nothing yet'
 
         # Fetch URL and extract content
-        response = wget(url).replace('\r\n','').replace('\n', '')   # Fetch URL and remove newlines
-        regex = re.compile('(?<=body).*?(?=<\/body>)')              # extract content of body HTML tag
+        try:
+            response = wget(url)
+        except:
+            self.render("timeout.html", )
+            return
+
+        response = response.replace('\r\n','').replace('\n', '')    # Remove newlines
+        regex = re.compile('(?<=body).*?(?=<\/body>)')              # Extract content of body HTML tag
         response = regex.findall(response)[0]                       
         response = re.sub(r'<.*?>', ' ', response)                  # Remove HTML tags
 
@@ -157,14 +170,14 @@ def handle_request(response):
         print response.body
 
 settings = {
-    #"blog_title": u"Tornado Blog",
     "template_path": os.path.join(os.path.dirname(__file__), "templates"),
-    #"ui_modules": {"Entry": EntryModule},
     #"xsrf_cookies": True,
+    "cookie_secret": "d5af06c693f60dddb95631e3a2b099603cc488505c6004b8d3cb526aef998c870b902fe6a7dc2983e0d1073e2670a8f3cc9d12a16d237f3a0e35806092b0bebe",
 }
 application = tornado.web.Application([
     (r"/", HomeHandler),
     (r"/admin", SQLHandler),
+    (r"/login", LoginHandler),
     (r"/.*", RedirectHandler),
 ], **settings)
 

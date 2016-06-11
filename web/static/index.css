@@ -1,0 +1,57 @@
+
+body {
+	font-family: helvetica, arial;
+}
+
+table{
+	font-family: helvetica, arial;
+}
+
+thead{
+	font-weight: bold;
+}
+
+#header{
+	width: 100%;
+	border-bottom: 2px solid #ddd;
+	height: 30px;
+	/* color: #712002; */
+	/* background-color: #FCA530; */
+}
+
+#header-title{
+	font-weight: bold;
+	font-size: 24px;
+	position: absolute;
+	left:5px;
+	top: 5px;
+
+}
+
+#header-form{
+	position: absolute;
+	left:40%;
+	top: 5px;
+	width:30%;
+}
+
+#header-links{
+	position: absolute;
+	right: 5px;
+	top: 5px;
+}
+
+#explanation{
+	width:50%;
+	position: absolute;
+	left:35%;
+	top: 50px;
+}
+
+#word-url{
+	margin: 0 auto;
+}
+
+:hover, :visited, :link{
+	color: black;
+}
