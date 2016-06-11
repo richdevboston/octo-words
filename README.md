@@ -23,10 +23,9 @@ This application is built on top of:
 + Google App Engine
 + Tornado
 + MySQL
-+ PyCrypto
++ [Python-RSA](http://stuvel.eu/rsa)
 
 # TODO
-+ Enter into DB
 + Upload latest version to github
 + Upload latest version to app engine
 + Create Cordova version

@@ -2,22 +2,30 @@ import os.path
 import re
 import tornado.web
 import tornado.wsgi
-import unicodedata
-import uuid
+#import unicodedata
+#import uuid
 import hashlib
+import rsa
 
 import MySQLdb 
 
 from google.appengine.ext import db
-##from cryptography.fernet import Fernet
 from Crypto.Cipher import AES
 from utils import wget
 
 CLOUDSQL_PROJECT = 'octo-words'
 CLOUDSQL_INSTANCE = 'octo-words'
 SALT = 'ba4ae64a7f60c7b13214a86ef2c59438'
-ENCRYPT_KEY = '1c99a1de324e9a825f7e269f0c2a2f99'
-IV = '\x04\x80_\xb5\x10H\r"\n}\xf1-\xd3\x85\x0c\x11'
+#ENCRYPT_KEY = '1c99a1de324e9a825f7e269f0c2a2f99'
+#IV = '\x04\x80_\xb5\x10H\r"\n}\xf1-\xd3\x85\x0c\x11'
+
+#SECRET = "\xb7\x80\x17\x8b\xfd\xd6\xfb\x84\xeb\x981P'6Bh"
+
+#ENCRYPT_KEY = '0123456789abcdef'
+#IV = 16 * '\x00'  
+
+PUBLIC_KEY = u'-----BEGIN RSA PUBLIC KEY-----\nMEgCQQCAK6xyJOjr9642FKmW0BSWqfnvwgvEADzcBjd5U5fQl8BoEvs0mTsLl4ue\nn9vCo/VrYprfyhMoNTMtOu3Z7YyHAgMBAAE=\n-----END RSA PUBLIC KEY-----\n'
+PRIVATE_KEY = u'-----BEGIN RSA PRIVATE KEY-----\nMIIBOwIBAAJBAIArrHIk6Ov3rjYUqZbQFJap+e/CC8QAPNwGN3lTl9CXwGgS+zSZ\nOwuXi56f28Kj9Wtimt/KEyg1My067dntjIcCAwEAAQJAQ1OtwD/3QozWrH3qH9iq\nGAKt0e4CtDDTx1hUp5zrTWd4JgPiPzRzgjB0I+UWNdYpYtRcoTE1U6EDzO+MLzy6\nUQIjALzdutw7xSrakPpLKwCDniIYlb2VoXjWn5YU6sKKZ28QxqsCHwCtutOLVYcS\n5JBMrftaX+yjh1VjRhWkEnmB5DopwZUCIhhBnfslDgiX86DBwK8bOFcGs0ybCBb9\n8ZcT7qa3odso22sCHl47pFtDfQzGZW7yQBB5T4Yz9iDu9vYT/0xxWwsjMQIiAct8\njwdvdMtcP2CT0vOJCPo6YAcBx5BrYd8NNIrRYB1LwQ==\n-----END RSA PRIVATE KEY-----\n'
 
 class Entry(db.Model):
     """A single word entry."""
@@ -112,23 +120,23 @@ class HomeHandler(tornado.web.RequestHandler):
             hashed_word = hashlib.sha512(word + SALT).hexdigest()
 
             # Encryption
-        #    encryption_suite = AES.new(ENCRYPT_KEY, AES.MODE_CBC, IV)
-        #    cipher_text = encryption_suite.encrypt(word)
+            #encryption_suite = AES.new(ENCRYPT_KEY, AES.MODE_CBC, IV)
+            #cipher_text = encryption_suite.encrypt(word)
+            cipher_text = rsa.encrypt(word, rsa.PublicKey.load_pkcs1(PUBLIC_KEY))
 
             # Decryption
             #decryption_suite = AES.new('This is a key123', AES.MODE_CBC, 'This is an IV456')
             #plain_text = decryption_suite.decrypt(cipher_text)
 
-            #cursor.execute('select * from entries where wordhash=%', hashed_word)
-
             #hashed_word = word
-            cipher_text = word
-            try:
-                #result = cursor.fetchall()[0];
+            #cipher_text = word
+
+            cursor.execute('select count(1) from entries where wordhash=%s', (hashed_word,))
+            if cursor.rowcount > 0:
                 cursor.execute(
-                        'update entries set wordhash=%, wordencrypt=%, wordfreq=% where wordhash=%', 
-                        (hashed_word, cipher_text, wordcount[word]['freq']))
-            except:
+                        'update entries set wordencrypt=%s, wordfreq=%s where wordhash=%s', 
+                        (cipher_text, wordcount[word]['freq'], hashed_word))
+            else:
                 cursor.execute(
                         'insert into entries (wordhash, wordencrypt, wordfreq) values (%s, %s, %s)', 
                         (hashed_word, cipher_text, wordcount[word]['freq']))
@@ -159,7 +167,7 @@ settings = {
 }
 application = tornado.web.Application([
     (r"/", HomeHandler),
-    (r"/sql", SQLHandler),
+    (r"/admin", SQLHandler),
     (r"/.*", RedirectHandler),
 ], **settings)
 
