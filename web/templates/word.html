@@ -4,5 +4,9 @@
 <div id="word-title">
 	<h1>{{ url }}</h1>
 </div>
-<div id="word-result">{{ results }}</div>
+<div id="word-result">
+	{% for word in results %}
+	<span style="font-size: {{ results[word]['fontSize'] }}%;">{{ word }}</span> 
+	{% end %}
+</div>
 {% end %}
