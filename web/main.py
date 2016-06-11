@@ -29,7 +29,10 @@ class URLHandler(tornado.web.RequestHandler):
         url = self.get_argument("url", default=None, strip=False)
         response = 'Nothing yet'
 
-        response = wget(url).replace('\n','')
+        response = wget(url).replace('\r\n','').replace('\n', '')
+        regex = re.compile('(?<=body).*?(?=<\/body>)')
+        response = regex.findall(response)[0]
+        response = re.sub(r'<.*?>', ' ', response)
             
         self.render("word.html", url=url, results=response)
 

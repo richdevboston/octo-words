@@ -7,6 +7,9 @@ This application retrieves the top 100 words from any URL submitted through its 
 2. Press the submit button
 3. Enjoy!
 
+# Components
+This application is built on top of Google App Engine and Tornado.
+
 # TODO
 + Handle URLs: Add http:// if necessary
 + Retrieve the page data
@@ -17,3 +20,6 @@ This application retrieves the top 100 words from any URL submitted through its 
 + Sort by frequency
 + Display as word cloud
 + Enter into DB
++ Create Github repo
++ Upload
++ Create Cordova version
