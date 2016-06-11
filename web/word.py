@@ -31,6 +31,7 @@ settings = {
     "template_path": os.path.join(os.path.dirname(__file__), "templates"),
     #"ui_modules": {"Entry": EntryModule},
     #"xsrf_cookies": True,
+    # Add {% module xsrf_form_html() %} to HTML forms if the above line is uncommented
 }
 application = tornado.web.Application([
     (r"/word", URLHandler),
