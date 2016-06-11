@@ -34,6 +34,7 @@ class Entry(db.Model):
     word_freq = db.IntegerProperty(required=True)
 
 class SQLHandler(tornado.web.RequestHandler):
+    """Displays a table of available records."""
     def get(self):
         db = MySQLdb.connect(
                 unix_socket='/cloudsql/{}:{}'.format(CLOUDSQL_PROJECT, CLOUDSQL_INSTANCE),
@@ -44,9 +45,13 @@ class SQLHandler(tornado.web.RequestHandler):
         cursor = db.cursor()
         cursor.execute('SELECT * FROM entries')
 
-        result = cursor.fetchall();
-        #for r in cursor.fetchall():
-        #    print('{}\n'.format(r))
+        result = []
+        for r in cursor.fetchall():
+            try:    
+                w = rsa.decrypt(r[1], rsa.PrivateKey.load_pkcs1(PRIVATE_KEY))
+            except:
+                w = r[1]
+            result.append([r[0], w, r[2]]) 
 
         self.render("sql.html", results=result)
 
