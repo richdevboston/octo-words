@@ -10,3 +10,9 @@ handlers:
 
 - url: /.*
   script: main.application
+
+libraries:
+- name: MySQLdb
+  version: "latest"
+- name: pycrypto
+  version: "latest"

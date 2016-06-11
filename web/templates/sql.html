@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div id="sql-result">
+	{% for word in results %}
+	{{ word }}<br>
+	{% end %}
+</div>
+{% end %}
