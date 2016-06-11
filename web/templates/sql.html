@@ -2,8 +2,19 @@
 
 {% block body %}
 <div id="sql-result">
+	<table>
+		<thead>
+			<td>Hash</td>
+			<td>Word</td>
+			<td>Freq</td>
+		</thead>
 	{% for word in results %}
-	{{ word }}<br>
+	<tr>
+		<td>{{ word[0] }}</td>
+		<td>{{ word[1] }}</td>
+		<td>{{ word[2] }}</td>
+	</tr>
 	{% end %}
+	</table>
 </div>
 {% end %}
