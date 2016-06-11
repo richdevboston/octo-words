@@ -19,12 +19,6 @@ class HomeHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("index.html", )
 
-class URLHandler(tornado.web.RequestHandler):
-    """Handles the request and returns the data."""
-    def get(self):
-        # Redirect to home.html
-        self.render("index.html", )
-
     def post(self):
         url = self.get_argument("url", default=None, strip=False)
         response = 'Nothing yet'
@@ -51,15 +45,28 @@ class URLHandler(tornado.web.RequestHandler):
         words = regex.findall(response)
         for word in words:
             if word not in wordcount:
-                wordcount[word] = {'freq': 1, 'fontSize': 1}
+                #wordcount[word] = {'freq': 1, 'fontSize': 1}
+                wordcount[word] = 1
             else:
-                wordcount[word]['freq'] += 1
+                wordcount[word] += 1
 
-        # Sort words by frequency
+        # Find top 100 words
+        tuples = sorted(wordcount.iteritems(), key=lambda (k,v):(v,k))
+        tuples.reverse()
+        count = 0
+        wordcount = {}
+        for i in tuples:
+            wordcount[i[0]] = {'freq': i[1], 'fontSize': 1}
+            count += 1
+            if count >= 100:
+                break
+
+        # Find highest value
         high = 0
         for word in wordcount:
             high = max(high, wordcount[word]['freq'])
         
+        # Define font size relative to the highest value
         for word in wordcount:
             wordcount[word]['fontSize'] = float(wordcount[word]['freq']) / float(high) * float(400)
             
@@ -80,7 +87,6 @@ settings = {
     #"xsrf_cookies": True,
 }
 application = tornado.web.Application([
-    (r"/word", URLHandler),
     (r"/.*", HomeHandler),
 ], **settings)
 
