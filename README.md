@@ -37,3 +37,4 @@ This application stores the data it retrieves as hashes and encrypted data
 + Create Cordova version
 + Exceptions: request timeout, URL not available
 + Add taskqueues to insert data into DB?
++ Remove dead code

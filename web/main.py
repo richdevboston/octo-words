@@ -43,7 +43,7 @@ class SQLHandler(tornado.web.RequestHandler):
                 db='words')
 
         cursor = db.cursor()
-        cursor.execute('SELECT * FROM entries')
+        cursor.execute('SELECT * FROM entries ORDER BY wordfreq DESC')
 
         result = []
         for r in cursor.fetchall():
@@ -125,17 +125,9 @@ class HomeHandler(tornado.web.RequestHandler):
             hashed_word = hashlib.sha512(word + SALT).hexdigest()
 
             # Encryption
-            #encryption_suite = AES.new(ENCRYPT_KEY, AES.MODE_CBC, IV)
-            #cipher_text = encryption_suite.encrypt(word)
             cipher_text = rsa.encrypt(word, rsa.PublicKey.load_pkcs1(PUBLIC_KEY))
 
-            # Decryption
-            #decryption_suite = AES.new('This is a key123', AES.MODE_CBC, 'This is an IV456')
-            #plain_text = decryption_suite.decrypt(cipher_text)
-
-            #hashed_word = word
-            #cipher_text = word
-
+            # Update/insert rows
             cursor.execute('select count(1) from entries where wordhash=%s', (hashed_word,))
             if cursor.rowcount > 0:
                 cursor.execute(
