@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  	<head>
+		<meta charset="UTF-8">
+		<title>Word Frequency Lookup</title>
+		<link rel="stylesheet" href="/static/index.css" type="text/css">
+		{% block header %}{% end %}
+  	</head>
+  	<body>
+		<div id="body">
+	  		<div id="header">
+				<div id="header-title">
+					OctoWords
+				</div>
+				<div id="header-links">
+					<a href="/admin">Admin</a>
+					<a href="/">Home</a>
+				</div>
+	  		</div>
+	  		<div id="content">{% block body %}{% end %}</div>
+		</div>
+		{% block bottom %}{% end %}
+  	</body>
+</html>
