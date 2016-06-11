@@ -1,4 +1,5 @@
-# Main Page Handler
+# Core Handler
+# Fetches the URL and return the top 100 words
 
 import os.path
 import re
@@ -15,10 +16,15 @@ class Entry(db.Model):
     word_encrypt = db.StringProperty(required=True)
     word_freq = db.IntegerProperty(required=True)
 
-class HomeHandler(tornado.web.RequestHandler):
-    """Displays the home page."""
+class URLHandler(tornado.web.RequestHandler):
+    """Handles the request and returns the data."""
     def get(self):
-        self.render("index.html", )
+        # Redirect to home.html
+        self.redirect('/')
+
+    def post(self):
+        url = self.get_argument("url", default=None, strip=False)
+        self.render("word.html", url=url)
 
 settings = {
     #"blog_title": u"Tornado Blog",
@@ -27,7 +33,7 @@ settings = {
     #"xsrf_cookies": True,
 }
 application = tornado.web.Application([
-    (r"/", HomeHandler),
+    (r"/word", URLHandler),
 ], **settings)
 
 application = tornado.wsgi.WSGIAdapter(application)
