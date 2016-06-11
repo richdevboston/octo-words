@@ -10,18 +10,24 @@ Pull the repository from the the command line
 
 Upload the application on Google App Engine
 > cd project-folder
+
 > appcfg.py update .
 
 Access the application on [Google App Engine](http://octo-words.appspot.com)
 
 # How to use the application
 Display the word cloud
+
 1. Enter the URL you want to analyze in the form field
+
 2. Press the submit button
+
 3. Enjoy!
 
 Login to the admin page
+
 1. Click the admin page link
+
 2. Enter the following credentials: admin/admin
 
 # Components
@@ -39,7 +45,5 @@ This application stores the data it retrieves as hashes and encrypted data
 + Salts and encryption keys must be kept in separate databases for additional protection although they were included in the code here.
 
 # TODO
-+ Upload latest version to github
-+ Upload latest version to app engine
 + Create Cordova version
 + Remove dead code
